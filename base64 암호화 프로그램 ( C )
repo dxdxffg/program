@@ -1,0 +1,115 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <windows.h>
+//made by dxdxffg
+const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+void base64_encode(const char* input, char* output) {
+    int i, j;
+    int input_len = strlen(input);
+
+    for (i = 0, j = 0; i < input_len;) {
+        uint32_t octet_a = i < input_len ? (unsigned char)input[i++] : 0;
+        uint32_t octet_b = i < input_len ? (unsigned char)input[i++] : 0;
+        uint32_t octet_c = i < input_len ? (unsigned char)input[i++] : 0;
+
+        uint32_t triple = (octet_a << 16) | (octet_b << 8) | octet_c;
+
+        output[j++] = base64_table[(triple >> 18) & 0x3F];
+        output[j++] = base64_table[(triple >> 12) & 0x3F];
+        output[j++] = base64_table[(triple >> 6) & 0x3F];
+        output[j++] = base64_table[triple & 0x3F];
+    }
+
+    for (int k = 0; k < (3 - input_len % 3) % 3; k++)
+        output[--j] = '=';
+
+    output[j] = '\0';
+}
+
+void base64_decode(const char* input, char* output) {
+    int i, j;
+    int input_len = strlen(input);
+    int padding = 0;
+
+    if (input[input_len - 1] == '=') padding++;
+    if (input[input_len - 2] == '=') padding++;
+
+    for (i = 0, j = 0; i < input_len;) {
+        uint32_t sextet_a = input[i] == '=' ? 0 & i++ : strchr(base64_table, input[i++]) - base64_table;
+        uint32_t sextet_b = input[i] == '=' ? 0 & i++ : strchr(base64_table, input[i++]) - base64_table;
+        uint32_t sextet_c = input[i] == '=' ? 0 & i++ : strchr(base64_table, input[i++]) - base64_table;
+        uint32_t sextet_d = input[i] == '=' ? 0 & i++ : strchr(base64_table, input[i++]) - base64_table;
+
+        uint32_t triple = (sextet_a << 18) | (sextet_b << 12) | (sextet_c << 6) | sextet_d;
+
+        if (j < input_len) output[j++] = (triple >> 16) & 0xFF;
+        if (j < input_len) output[j++] = (triple >> 8) & 0xFF;
+        if (j < input_len) output[j++] = triple & 0xFF;
+    }
+
+    output[j - padding] = '\0';
+}
+
+void clear_screen() {
+    system("cls");
+}
+
+void pause_and_clear(int delay_ms) {
+    Sleep(delay_ms);
+    clear_screen();
+}
+
+int main() {
+    char input[256];
+    char output[512];
+    char choice;
+
+    while (1) {
+        clear_screen();
+        printf("========================================\n");
+        printf("        Base64 암호화 및 복호화 프로그램\n");
+        printf("========================================\n");
+        printf("암호화하려면 'e', 복호화하려면 'd', 종료하려면 'q', 특수 출력을 보려면 '0'을 입력하세요: ");
+        scanf(" %c", &choice);
+
+        switch (choice) {
+            case 'e': case 'E':
+                getchar();
+                printf("암호화할 문장을 입력하세요: ");
+                fgets(input, sizeof(input), stdin);
+                input[strcspn(input, "\n")] = '\0';
+
+                base64_encode(input, output);
+                printf("암호화된 문자열: %s\n", output);
+                pause_and_clear(2000);
+                break;
+
+            case 'd': case 'D':
+                getchar();
+                printf("복호화할 문장을 입력하세요: ");
+                fgets(input, sizeof(input), stdin);
+                input[strcspn(input, "\n")] = '\0';
+
+                base64_decode(input, output);
+                printf("복호화된 문자열: %s\n", output);
+                pause_and_clear(2000);
+                break;
+
+            case 'q': case 'Q':
+                printf("프로그램을 종료합니다.\n");
+                return 0;
+
+            case '0':
+                printf("YmFzZTY0IGtleSBwcm9ncmFt\n");
+                pause_and_clear(2000);
+                break;
+
+            default:
+                printf("잘못된 입력입니다. 다시 시도하세요.\n");
+                pause_and_clear(1000);
+        }
+    }
+}
