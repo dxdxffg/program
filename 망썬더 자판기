@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <Windows.h>
+struct TANK {
+	unsigned long long int price;
+	int stock;
+	char name[50];
+};
+
+int main() {
+	int first = 0;
+	const int N = 9;
+	unsigned long long int money;
+	TANK tanks[N] = {
+		{410000,3,"M1A2_SEP_V2"},{400000,8,"ADATS"},{500000,1,"RDF/LT"},{40000,7,"TIGER E"},{420000,2,"LEOPARD 2A7V"},{400000,4,"FlaRakRad"},{400000,3,"T-90M"},{400000,8,"T-80BVM"},{400000,1,"PANTSIR-S1"},
+	};
+	while (1) {
+		printf("<<워썬더 지상 자판기>>\n\n");
+		for (int i = 0; i < N; i++) {
+			printf("%d.[%13s] %d개 %6d 연구점수\n", (i + 1),
+				tanks[i].name,tanks[i].stock, tanks[i].price );
+		}
+		int choice;
+		
+		if(first == 0){printf("\n 소지 금액 입력 : ");scanf("%llu", &money);}
+		
+		
+		printf("\n 자판기 번호 입력 : ");
+		scanf("%d", &choice);
+		if (money >= tanks[choice - 1].price) {
+			printf("%s가 나왔습니다.\n", tanks[choice - 1].name);
+			printf("거스름돈 : %d 연구점수\n\n", money - tanks[choice - 1].price);
+			money -= tanks[choice - 1].price; tanks[choice - 1].stock--;
+		}
+		else { printf("돈이 부족합니다.\n\n"); }
+		printf("재구매를 희망하십니까? (Y/N) : ");
+		char ss; scanf(" %c", &ss);
+		if (ss == 'n' || ss == 'N') {
+			break;
+		}
+		system("cls");
+		first++;
+	}
+}
